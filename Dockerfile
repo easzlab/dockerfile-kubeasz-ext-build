@@ -1,7 +1,6 @@
-# Download extral binaries needed by 'kubeasz'
-#
+# Building extra binaries needed by 'kubeasz'
 # @author:  gjmzj
-# @repo:    https://github.com/kubeasz/dockerfiles/kubeasz-ext-build
+# @repo:    https://github.com/easzlab/dockerfile-kubeasz-ext-build
 # @ref:     https://github.com/easzlab/kubeasz
 
 FROM centos:7 as rpm_centos7
@@ -61,18 +60,12 @@ RUN yum install -y \
 		--with-init=systemd \
   && make && make install
 
-FROM golang:1.16 as cfssl_builder
-
-RUN git clone https://github.com/cloudflare/cfssl.git \
-    && cd cfssl && make
-
 FROM alpine:3.12
 
-ENV EXT_BUILD_VER=1.0.0
+ENV EXT_BUILD_VER=1.1.0
 
-COPY --from=rpm_centos7 /usr/local/nginx/sbin/nginx /bin
-COPY --from=rpm_centos7 /usr/local/sbin/chronyd /bin
-COPY --from=rpm_centos7 /usr/local/sbin/keepalived /bin
-COPY --from=cfssl_builder /go/cfssl/bin/cfssl /go/cfssl/bin/cfssljson /go/cfssl/bin/cfssl-certinfo /bin
+COPY --from=rpm_centos7 /usr/local/nginx/sbin/nginx /ext-bin/
+COPY --from=rpm_centos7 /usr/local/sbin/chronyd /ext-bin/
+COPY --from=rpm_centos7 /usr/local/sbin/keepalived /ext-bin/
 
 CMD [ "sleep", "360000000" ]
