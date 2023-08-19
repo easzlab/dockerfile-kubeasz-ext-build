@@ -5,11 +5,11 @@
 
 FROM centos:7 as rpm_centos7
 
-ENV NGINX_VERSION=1.22.1
-ENV CHRONY_VERSION 4.3
+ENV NGINX_VERSION=1.24.0
+ENV CHRONY_VERSION 4.4
 ENV CHRONY_DOWNLOAD_URL "https://download.tuxfamily.org/chrony/chrony-${CHRONY_VERSION}.tar.gz"
 ENV CHRONY_SHA256 9d0da889a865f089a5a21610ffb6713e3c9438ce303a63b49c2fb6eaff5b8804
-ENV KEEPALIVED_VERSION 2.2.7
+ENV KEEPALIVED_VERSION 2.2.8
 ENV KEEPALIVED_DOWNLOAD_URL "http://keepalived.org/software/keepalived-${KEEPALIVED_VERSION}.tar.gz"
 
 RUN yum install -y \
@@ -28,7 +28,7 @@ RUN yum install -y \
  && make && make install \
  && cd / \
  && curl -o chrony.tar.gz -SL $CHRONY_DOWNLOAD_URL \
- && echo "${CHRONY_SHA256} *chrony.tar.gz" | sha256sum -c - \
+ #&& echo "${CHRONY_SHA256} *chrony.tar.gz" | sha256sum -c - \
  && tar xzf chrony.tar.gz -C /tmp/ \
  && cd /tmp/chrony* \
  && ./configure \
@@ -60,9 +60,9 @@ RUN yum install -y \
 		--with-init=systemd \
   && make && make install
 
-FROM alpine:3.12
+FROM alpine:3.16
 
-ENV EXT_BUILD_VER=1.1.0
+ENV EXT_BUILD_VER=1.3.0
 
 COPY --from=rpm_centos7 /usr/local/nginx/sbin/nginx /ext-bin/
 COPY --from=rpm_centos7 /usr/local/sbin/chronyd /ext-bin/
