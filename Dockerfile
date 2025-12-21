@@ -11,7 +11,9 @@ ENV CHRONY_DOWNLOAD_URL "https://chrony-project.org/releases/chrony-${CHRONY_VER
 ENV KEEPALIVED_VERSION 2.3.4
 ENV KEEPALIVED_DOWNLOAD_URL "http://keepalived.org/software/keepalived-${KEEPALIVED_VERSION}.tar.gz"
 
-RUN yum install -y \
+RUN apt-get update && \
+    apt-get install --no-install-recommends --no-install-suggests -y \
+      ca-certificates \
       build-essential \
       git \
       curl \
