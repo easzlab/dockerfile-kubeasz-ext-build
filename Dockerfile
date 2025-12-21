@@ -5,11 +5,10 @@
 
 FROM centos:7 as rpm_centos7
 
-ENV NGINX_VERSION=1.24.0
-ENV CHRONY_VERSION 4.4
-ENV CHRONY_DOWNLOAD_URL "https://download.tuxfamily.org/chrony/chrony-${CHRONY_VERSION}.tar.gz"
-ENV CHRONY_SHA256 9d0da889a865f089a5a21610ffb6713e3c9438ce303a63b49c2fb6eaff5b8804
-ENV KEEPALIVED_VERSION 2.2.8
+ENV NGINX_VERSION=1.28.0
+ENV CHRONY_VERSION 4.8
+ENV CHRONY_DOWNLOAD_URL "https://chrony-project.org/releases/chrony-${CHRONY_VERSION}.tar.gz"
+ENV KEEPALIVED_VERSION 2.3.4
 ENV KEEPALIVED_DOWNLOAD_URL "http://keepalived.org/software/keepalived-${KEEPALIVED_VERSION}.tar.gz"
 
 RUN yum install -y \
