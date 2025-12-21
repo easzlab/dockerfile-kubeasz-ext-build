@@ -3,7 +3,7 @@
 # @repo:    https://github.com/easzlab/dockerfile-kubeasz-ext-build
 # @ref:     https://github.com/easzlab/kubeasz
 
-FROM centos:7 as rpm_centos7
+FROM ubuntu:24.04 AS builder
 
 ENV NGINX_VERSION=1.28.0
 ENV CHRONY_VERSION 4.8
@@ -12,10 +12,12 @@ ENV KEEPALIVED_VERSION 2.3.4
 ENV KEEPALIVED_DOWNLOAD_URL "http://keepalived.org/software/keepalived-${KEEPALIVED_VERSION}.tar.gz"
 
 RUN yum install -y \
-      gcc \
-      make \
-      openssl \
-      openssl-devel \
+      build-essential \
+      git \
+      curl \
+      libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev \
+      libseccomp-dev libnss-dev \
+      libnl-3-dev libnl-genl-3-dev libnfnetlink-dev \
  && curl -o nginx.tar.gz -SL http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
  && tar -xzf nginx.tar.gz -C /tmp/ \
  && cd /tmp/nginx-* \
@@ -59,12 +61,10 @@ RUN yum install -y \
 		--with-init=systemd \
   && make && make install
 
-FROM alpine:3.16
+FROM alpine:3.22
 
-ENV EXT_BUILD_VER=1.3.0
+ENV EXT_BUILD_VER=1.4.0
 
-COPY --from=rpm_centos7 /usr/local/nginx/sbin/nginx /ext-bin/
-COPY --from=rpm_centos7 /usr/local/sbin/chronyd /ext-bin/
-COPY --from=rpm_centos7 /usr/local/sbin/keepalived /ext-bin/
-
-CMD [ "sleep", "360000000" ]
+COPY --from=builder /usr/local/nginx/sbin/nginx /ext-bin/
+COPY --from=builder /usr/local/sbin/chronyd /ext-bin/
+COPY --from=builder /usr/local/sbin/keepalived /ext-bin/
