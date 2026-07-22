@@ -5,10 +5,10 @@
 
 FROM ubuntu:22.04 AS builder
 
-ENV NGINX_VERSION=1.28.0
+ENV NGINX_VERSION=1.30.4
 ENV CHRONY_VERSION=4.8
 ENV CHRONY_DOWNLOAD_URL="https://chrony-project.org/releases/chrony-${CHRONY_VERSION}.tar.gz"
-ENV KEEPALIVED_VERSION=2.3.4
+ENV KEEPALIVED_VERSION=2.4.3
 ENV KEEPALIVED_DOWNLOAD_URL="http://keepalived.org/software/keepalived-${KEEPALIVED_VERSION}.tar.gz"
 
 RUN set -x; \
@@ -65,10 +65,25 @@ RUN set -x; \
 		--with-init=systemd \
   && make && make install
 
+
+FROM golang:1.22 as builder2
+ENV CFSSL_VER=v1.6.5
+RUN set -x \
+    && mkdir -p /ext-bin \
+    && git config --global advice.detachedHead false \
+    && git clone --depth 1 -b ${CFSSL_VER} https://github.com/cloudflare/cfssl.git \
+    && cd cfssl \
+    && go build -tags 'netgo,osusergo,sqlite_omit_load_extension' -ldflags '-s -w -extldflags "-static"' cmd/cfssl/cfssl.go \
+    && go build -tags 'netgo,osusergo,sqlite_omit_load_extension' -ldflags '-s -w -extldflags "-static"' cmd/cfssljson/cfssljson.go \
+    && go build -tags 'netgo,osusergo,sqlite_omit_load_extension' -ldflags '-s -w -extldflags "-static"' cmd/cfssl-certinfo/cfssl-certinfo.go \
+    && mv cfssljson cfssl-certinfo cfssl /ext-bin
+
+
 FROM alpine:3.22
 
-ENV EXT_BUILD_VER=1.4.2
+ENV EXT_BUILD_VER=1.5.0
 
 COPY --from=builder /usr/local/nginx/sbin/nginx /ext-bin/
 COPY --from=builder /usr/local/sbin/chronyd /ext-bin/
 COPY --from=builder /usr/local/sbin/keepalived /ext-bin/
+COPY --from=builder2 /ext-bin/* /ext-bin/
